@@ -47,17 +47,17 @@ exports.changeSubdomain = async () => {
 `;
 
 	await writeFile(env.NGINX_CONF, nginxConfig);
-	await restartNGINX();
+	await restartNGINX(newSub);
 };
 
-const restartNGINX = async () => {
+const restartNGINX = async (newSub) => {
 	exec("sudo nginx -s reload", async (err, stdout) => {
 		if (err) {
 			console.error(err);
 			return await restartNGINX();
 		}
 		console.log(stdout);
-		console.log("Changed Subdomain to", newSub);
+		console.log("Changed Subdomain to", `https://${newSub}`);
 		if (env.EMAIL) {
 			await this.sendEmail(
 				env.EMAIL,
