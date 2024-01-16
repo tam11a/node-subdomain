@@ -14,38 +14,6 @@ exports.changeSubdomain = async () => {
 		return;
 	}
 	const newSub = newSubdomain();
-	// 	const nginxConfig = `
-	// 	server {
-	// 		server_name ${newSub};
-
-	// 		root /var/www/pos;
-	// 		index index.html;
-
-	// 		location / {
-	// 			try_files $uri $uri/ /index.html =404;
-	// 		}
-
-	// 		listen [::]:443 ssl ipv6only=on; # managed by Certbot
-	// 		listen 443 ssl; # managed by Certbot
-	// 		ssl_certificate /etc/letsencrypt/live/hello.jodumodu.com/fullchain.pem; # managed by Certbot
-	// 		ssl_certificate_key /etc/letsencrypt/live/hello.jodumodu.com/privkey.pem; # managed by Certbot
-	// 		include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-	// 		ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
-	// 	}
-
-	// 	server {
-	// 		if ($host = ${newSub}) {
-	// 			return 301 https://$host$request_uri;
-	// 		} # managed by Certbot
-
-	// 		listen 80;
-	// 		listen [::]:80;
-
-	// 		server_name ${newSub};
-	// 		return 404; # managed by Certbot
-	// 	}
-
-	// `;
 
 	const nginxConfig = `
 server {
@@ -67,19 +35,35 @@ server {
 	await restartNGINX(newSub);
 };
 
-const restartNGINX = async (newSub) => {
+const configSSL = async (newSub) => {
+	exec(`certbot --nginx -d  ${newSub}`, async (err, stdout) => {
+		if (err) {
+			console.error(err);
+			return await restartNGINX();
+		}
+		console.log("Added Certification and shifted to", `https://${newSub}`);
+		if (env.EMAIL) {
+			await this.sendEmail(
+				env.EMAIL,
+				"Subdomain Changed",
+				`Changed Subdomain to ${newSub}`
+			);
+		}
+		if (env.PHONE) {
+			await this.sendSMS(env.PHONE, `Changed Subdomain to ${newSub}`);
+		}
+	});
+};
+
+const restartNGINX = async (newSub, cert = false) => {
 	exec("systemctl restart nginx", async (err, stdout) => {
 		if (err) {
 			console.error(err);
 			return await restartNGINX();
 		}
 		console.log("Changed Subdomain to", `http://${newSub}`);
-		exec(`certbot --nginx -d  ${newSub}`, async (err, stdout) => {
-			if (err) {
-				console.error(err);
-				return await restartNGINX();
-			}
-			console.log("Added Certification and shifted to", `https://${newSub}`);
+		if (cert) await configSSL(newSub);
+		else {
 			if (env.EMAIL) {
 				await this.sendEmail(
 					env.EMAIL,
@@ -90,7 +74,7 @@ const restartNGINX = async (newSub) => {
 			if (env.PHONE) {
 				await this.sendSMS(env.PHONE, `Changed Subdomain to ${newSub}`);
 			}
-		});
+		}
 	});
 };
 
