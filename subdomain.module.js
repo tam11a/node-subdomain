@@ -52,7 +52,7 @@ exports.changeSubdomain = async () => {
 };
 
 const restartNGINX = async (newSub) => {
-	exec("sudo nginx -s reload", async (err, stdout) => {
+	exec("systemctl restart nginx", async (err, stdout) => {
 		if (err) {
 			console.error(err);
 			return await restartNGINX();
