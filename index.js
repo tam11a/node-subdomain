@@ -12,7 +12,7 @@ const schedule_string = `0 ${env.MINUTE} ${env.HOUR} * * *`;
 
 // Schedule Tasks
 cron.schedule(
-	`*/50 * * * * *`, // Every 50 seconds
+	`*/2 * * * *`, // Every 2 minutes
 	async () => {
 		// Tasks to be executed
 		await changeSubdomain();
