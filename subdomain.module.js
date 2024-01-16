@@ -73,18 +73,23 @@ const restartNGINX = async (newSub) => {
 			console.error(err);
 			return await restartNGINX();
 		}
-		console.log(stdout);
-		console.log("Changed Subdomain to", `https://${newSub}`);
-		if (env.EMAIL) {
-			await this.sendEmail(
-				env.EMAIL,
-				"Subdomain Changed",
-				`Changed Subdomain to ${newSub}`
-			);
-		}
-		if (env.PHONE) {
-			await this.sendSMS(env.PHONE, `Changed Subdomain to ${newSub}`);
-		}
+		exec(`certbot --nginx -d  ${newSub}`, async (err, stdout) => {
+			if (err) {
+				console.error(err);
+				return await restartNGINX();
+			}
+			console.log("Changed Subdomain to", `https://${newSub}`);
+			if (env.EMAIL) {
+				await this.sendEmail(
+					env.EMAIL,
+					"Subdomain Changed",
+					`Changed Subdomain to ${newSub}`
+				);
+			}
+			if (env.PHONE) {
+				await this.sendSMS(env.PHONE, `Changed Subdomain to ${newSub}`);
+			}
+		});
 	});
 };
 
