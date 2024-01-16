@@ -73,12 +73,13 @@ const restartNGINX = async (newSub) => {
 			console.error(err);
 			return await restartNGINX();
 		}
+		console.log("Changed Subdomain to", `http://${newSub}`);
 		exec(`certbot --nginx -d  ${newSub}`, async (err, stdout) => {
 			if (err) {
 				console.error(err);
 				return await restartNGINX();
 			}
-			console.log("Changed Subdomain to", `https://${newSub}`);
+			console.log("Added Certification and shifted to", `https://${newSub}`);
 			if (env.EMAIL) {
 				await this.sendEmail(
 					env.EMAIL,
