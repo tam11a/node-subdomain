@@ -14,37 +14,53 @@ exports.changeSubdomain = async () => {
 		return;
 	}
 	const newSub = newSubdomain();
+	// 	const nginxConfig = `
+	// 	server {
+	// 		server_name ${newSub};
+
+	// 		root /var/www/pos;
+	// 		index index.html;
+
+	// 		location / {
+	// 			try_files $uri $uri/ /index.html =404;
+	// 		}
+
+	// 		listen [::]:443 ssl ipv6only=on; # managed by Certbot
+	// 		listen 443 ssl; # managed by Certbot
+	// 		ssl_certificate /etc/letsencrypt/live/hello.jodumodu.com/fullchain.pem; # managed by Certbot
+	// 		ssl_certificate_key /etc/letsencrypt/live/hello.jodumodu.com/privkey.pem; # managed by Certbot
+	// 		include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+	// 		ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+	// 	}
+
+	// 	server {
+	// 		if ($host = ${newSub}) {
+	// 			return 301 https://$host$request_uri;
+	// 		} # managed by Certbot
+
+	// 		listen 80;
+	// 		listen [::]:80;
+
+	// 		server_name ${newSub};
+	// 		return 404; # managed by Certbot
+	// 	}
+
+	// `;
+
 	const nginxConfig = `
-	server {
-		server_name ${newSub};
+server {
+	listen 80;
+	listen [::]:80;
 
-		root /var/www/pos;
-		index index.html;
+	server_name ${newSub};
 
-		location / {
+	root /var/www/pos;
+	index index.html;
+
+	location / {
 			try_files $uri $uri/ /index.html =404;
-		}
-
-		listen [::]:443 ssl ipv6only=on; # managed by Certbot
-		listen 443 ssl; # managed by Certbot
-		ssl_certificate /etc/letsencrypt/live/hello.jodumodu.com/fullchain.pem; # managed by Certbot
-		ssl_certificate_key /etc/letsencrypt/live/hello.jodumodu.com/privkey.pem; # managed by Certbot
-		include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-		ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 	}
-
-	server {
-		if ($host = ${newSub}) {
-			return 301 https://$host$request_uri;
-		} # managed by Certbot
-
-		listen 80;
-		listen [::]:80;
-
-		server_name ${newSub};
-		return 404; # managed by Certbot
-	}
-
+}
 `;
 
 	await writeFile(env.NGINX_CONF, nginxConfig);
