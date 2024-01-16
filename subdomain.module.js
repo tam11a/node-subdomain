@@ -1,9 +1,10 @@
 const { writeFile } = require("fs/promises");
-const { v4: uuidv4 } = require("uuid");
+// const { v4: uuidv4 } = require("uuid");
 const { env } = require("./config");
 const { exec } = require("child_process");
+const { nanoid } = require("nanoid");
 
-const generateSubdomain = () => uuidv4();
+const generateSubdomain = () => nanoid(5);
 
 const newSubdomain = () => `${generateSubdomain()}.${env.BASE_URL}`;
 
