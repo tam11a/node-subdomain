@@ -1,6 +1,7 @@
 const { writeFile } = require("fs/promises");
 const { v4: uuidv4 } = require("uuid");
 const { env } = require("./config");
+const { exec } = require("child_process");
 
 const generateSubdomain = () => uuidv4();
 
@@ -46,17 +47,28 @@ exports.changeSubdomain = async () => {
 `;
 
 	await writeFile(env.NGINX_CONF, nginxConfig);
-	console.log("Changed Subdomain to", newSub);
-	if (env.EMAIL) {
-		await this.sendEmail(
-			env.EMAIL,
-			"Subdomain Changed",
-			`Changed Subdomain to ${newSub}`
-		);
-	}
-	if (env.PHONE) {
-		await this.sendSMS(env.PHONE, `Changed Subdomain to ${newSub}`);
-	}
+	await restartNGINX();
+};
+
+const restartNGINX = async () => {
+	exec("sudo nginx -s reload", async (err, stdout) => {
+		if (err) {
+			console.error(err);
+			return await restartNGINX();
+		}
+		console.log(stdout);
+		console.log("Changed Subdomain to", newSub);
+		if (env.EMAIL) {
+			await this.sendEmail(
+				env.EMAIL,
+				"Subdomain Changed",
+				`Changed Subdomain to ${newSub}`
+			);
+		}
+		if (env.PHONE) {
+			await this.sendSMS(env.PHONE, `Changed Subdomain to ${newSub}`);
+		}
+	});
 };
 
 exports.sendEmail = async (email, subject, message) => {
