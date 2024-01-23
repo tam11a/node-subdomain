@@ -9,10 +9,11 @@ const { changeSubdomain } = require("./subdomain.module");
 const { env } = require("./config");
 
 const schedule_string = `0 ${env.MINUTE} ${env.HOUR} * * *`;
+// `*/2 * * * *`, // Every 2 minutes
 
 // Schedule Tasks
 cron.schedule(
-	`*/2 * * * *`, // Every 2 minutes
+	schedule_string,
 	async () => {
 		// Tasks to be executed
 		await changeSubdomain();
